@@ -1,0 +1,428 @@
+"use client";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  LayoutDashboard,
+  Layers3,
+  Crosshair,
+  BookOpen,
+  TrendingUp,
+  ShieldCheck,
+  Users,
+  Play,
+  Plus,
+  RefreshCw,
+  Check,
+  Clock3,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import type { Mission, OSState } from "@/lib/os";
+import { catalogSprint } from "@/lib/catalog-sprint";
+
+type CommandBody =
+  | { command: "create_venture"; name: string; problem?: string; offer?: string; answers: boolean[] }
+  | { command: "set_mission_status"; id: string; status: Mission["status"] }
+  | { command: "run_cycle" }
+  | {
+      command: "add_ledger";
+      ventureId?: string;
+      revenueGenerated?: number;
+      revenueProtected?: number;
+      cashSaved?: number;
+      hoursSaved?: number;
+      processesAutomated?: number;
+      customerValue?: string;
+      knowledge?: string;
+      documentation?: string;
+      improvement?: string;
+      asset?: string;
+    }
+  | {
+      command: "create_mission";
+      title?: string;
+      ventureId?: string;
+      type?: string;
+      priority?: Mission["priority"];
+      reason?: string;
+      roi?: string;
+      risk?: string;
+      alternative?: string;
+      confidence?: number;
+    };
+
+type CommandFn = (body: CommandBody) => Promise<boolean>;
+
+type ModelContextToolPayload = {
+  name: string;
+  title: string;
+  description: string;
+  inputSchema: {
+    type: string;
+    properties: Record<string, unknown>;
+    additionalProperties: boolean;
+  };
+  annotations: {
+    readOnlyHint: boolean;
+    untrustedContentHint: boolean;
+  };
+  execute: () => Promise<{ status: string }>;
+};
+
+type ModelContextBridge = {
+  registerTool: (
+    payload: ModelContextToolPayload,
+    options: { signal: AbortSignal },
+  ) => void;
+};
+
+const nav = [["command", "Command center", LayoutDashboard], ["catalog", "Catalog launch", Crosshair], ["ventures", "Ventures", Layers3], ["agents", "Agent organization", Users], ["missions", "Fire missions", Crosshair], ["ledger", "Value ledger", TrendingUp], ["knowledge", "Knowledge base", BookOpen], ["system", "System log", ShieldCheck]] as const;
+const filters = ["Solves a painful problem", "Someone will happily pay", "Can be standardized", "Can be automated", "Creates recurring revenue", "Can operate without Dominic"];
+
+export default function Home() {
+  const [state, setState] = useState<OSState | null>(null);
+  const [view, setView] = useState("command");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const load = useCallback(async () => {
+    setBusy(true);
+    try {
+      const r = await fetch("/api/os");
+      const j = (await r.json()) as { state?: OSState; error?: string };
+      if (r.ok && j.state) {
+        setState(j.state);
+        setError("");
+        return;
+      }
+      if (j.state) {
+        setState(j.state);
+        setError("");
+        return;
+      }
+      throw new Error(j.error || "Unable to load SVOS");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Unable to load SVOS");
+    } finally {
+      setBusy(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const handle = window.setTimeout(() => {
+      void load();
+    }, 0);
+    return () => window.clearTimeout(handle);
+  }, [load]);
+
+  const command = useCallback(async (body: CommandBody): Promise<boolean> => {
+    setBusy(true);
+    try {
+      const r = await fetch("/api/os", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+      const j = (await r.json()) as { state?: OSState; error?: string };
+      if (r.ok && j.state) {
+        setState(j.state);
+        setError("");
+        return true;
+      }
+      if (j.state) {
+        setState(j.state);
+        setError("");
+        return true;
+      }
+      throw new Error(j.error || "Command failed");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Command failed");
+      return false;
+    } finally {
+      setBusy(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const modelContext = (globalThis as typeof globalThis & { modelContext?: ModelContextBridge }).modelContext;
+    if (!modelContext?.registerTool) return;
+    const ac = new AbortController();
+    modelContext.registerTool(
+      {
+        name: "run_svos_cycle",
+        title: "Run SVOS operating cycle",
+        description: "Coordinate all departments and refresh Jamal's briefing from current portfolio records.",
+        inputSchema: { type: "object", properties: {}, additionalProperties: false },
+        annotations: { readOnlyHint: false, untrustedContentHint: false },
+        execute: async () => {
+          await command({ command: "run_cycle" });
+          return { status: "complete" };
+        },
+      },
+      { signal: ac.signal },
+    );
+    return () => ac.abort();
+  }, [command]);
+
+  if (!state) {
+    return (
+      <div className="loading">
+        <RefreshCw className={busy ? "spin" : ""} />
+        <span>{error || "Opening Savoy Ventures OS…"}</span>
+        <Button onClick={() => void load()}>Retry</Button>
+      </div>
+    );
+  }
+
+  const revenue = state.ledger.reduce((n, v) => n + v.revenueGenerated, 0);
+  const saved = state.ledger.reduce((n, v) => n + v.hoursSaved, 0);
+  const approved = state.missions.filter(
+    (m) => m.status === "approved" && m.createdAt.slice(0, 10) === new Date().toISOString().slice(0, 10),
+  ).length;
+
+  return (
+    <div className="app-shell">
+      <aside className="rail">
+        <div className="brand">S<span>SAVOY<br /><small>VENTURES</small></span></div>
+        <nav>
+          {nav.map(([id, label, Icon]) => (
+            <button key={id} className={view === id ? "active" : ""} onClick={() => setView(id)}>
+              <Icon />
+              <span>{label}</span>
+              {id === "missions" && state.missions.some((m) => m.status === "queued") && (
+                <b>{state.missions.filter((m) => m.status === "queued").length}</b>
+              )}
+            </button>
+          ))}
+        </nav>
+        <div className="founder">Dominic · Founder<small>SVOS / VERSION 1.0</small></div>
+      </aside>
+      <main>
+        <header>
+          <div>
+            <strong>{nav.find((n) => n[0] === view)?.[1]}</strong>
+            <span>Jamal is your executive interface</span>
+          </div>
+          <span className="live"><i /> System online</span>
+        </header>
+        <div className="content">
+          {error && <div className="error">{error}<button onClick={() => setError("")}>×</button></div>}
+          {view === "command" && <Command state={state} revenue={revenue} saved={saved} approved={approved} run={() => void command({ command: "run_cycle" })} go={setView} busy={busy} />}
+          {view === "ventures" && <Ventures state={state} command={command} />}
+          {view === "catalog" && <CatalogLaunch />}
+          {view === "agents" && <Agents state={state} run={() => void command({ command: "run_cycle" })} />}
+          {view === "missions" && <Missions state={state} command={command} />}
+          {view === "ledger" && <Ledger state={state} command={command} />}
+          {view === "knowledge" && <Knowledge state={state} />}
+          {view === "system" && <SystemLog state={state} />}
+        </div>
+      </main>
+    </div>
+  );
+}
+
+function Command({ state, revenue, saved, approved, run, go, busy }: { state: OSState; revenue: number; saved: number; approved: number; run: () => void; go: React.Dispatch<React.SetStateAction<string>>; busy: boolean }) {
+  return (
+    <>
+      <Title eyebrow="DAILY EXECUTIVE BRIEFING" title={new Date(state.briefing.date).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })} action={<Button onClick={run} disabled={busy}><Play />Run operating cycle</Button>} />
+      <div className="metrics">
+        <Metric label="Revenue generated" value={`$${revenue.toLocaleString()}`} note="Verified ledger entries" />
+        <Metric label="Founder hours saved" value={saved} note="Verified ledger entries" />
+        <Metric label="Active ventures" value={state.ventures.length} note={`${state.ventures.filter((v) => v.score === 6).length} pass the filter`} />
+        <Metric label="Decisions today" value={`${approved}/3`} note="Attention budget" />
+      </div>
+      <section className="jamal">
+        <div className="jamal-id"><span>J</span><div><b>Jamal</b><small>CHIEF OF STAFF</small></div></div>
+        <div>
+          <h2>Mission status</h2>
+          <p>{state.briefing.summary}</p>
+          <div className="intel">
+            <Intel label="BIGGEST OPPORTUNITY" text={state.briefing.opportunity} />
+            <Intel label="BIGGEST RISK" text={state.briefing.risk} />
+            <Intel label="NEXT ACTION" text={state.briefing.nextAction} />
+          </div>
+        </div>
+      </section>
+      <div className="two">
+        <section className="panel">
+          <Title eyebrow="FOUNDER ATTENTION" title="Fire missions" action={<button className="text-button" onClick={() => go("missions")}>View all</button>} />
+          {state.missions.filter((m) => m.status === "queued").slice(0, 3).map((m) => (
+            <div className="mission-row" key={m.id}><div><b>{m.title}</b><p>{m.reason}</p></div><Button size="sm" onClick={() => go("missions")}>Review</Button></div>
+          ))}
+        </section>
+        <section className="panel">
+          <p className="eyebrow">FREEDOM PROGRESS</p>
+          <h2>${revenue.toLocaleString()} / ${state.settings.weeklyFreedomTarget.toLocaleString()}</h2>
+          <div className="progress"><i style={{ width: `${Math.min(100, (revenue / state.settings.weeklyFreedomTarget) * 100)}%` }} /></div>
+          <p>Weekly verified revenue target. Forecasts are excluded.</p>
+        </section>
+      </div>
+    </>
+  );
+}
+
+function Ventures({ state, command }: { state: OSState; command: CommandFn }) {
+  return (
+    <>
+      <Title eyebrow="PORTFOLIO" title="Venture pipeline" action={<VentureDialog command={command} />} />
+      <div className="venture-grid">{state.ventures.map((v) => <article className="venture" key={v.id}><div className="section-head"><Status status={v.status} /><span className="score">{v.score}/6 FILTER</span></div><h2>{v.name}</h2><span className="stage">{v.stage}</span><h3>Problem</h3><p>{v.problem}</p><h3>Offer</h3><p>{v.offer}</p><footer><small>NEXT ACTION</small><b>{v.nextAction}</b></footer></article>)}</div>
+    </>
+  );
+}
+
+function Agents({ state, run }: { state: OSState; run: () => void }) {
+  return (
+    <>
+      <Title eyebrow="AI ORGANIZATION" title="Departments report through Jamal" action={<Button onClick={run}><Play />Run all departments</Button>} />
+      <article className="chief"><div className="avatar">J</div><div><small>ONLY FOUNDER INTERFACE</small><h2>Jamal · Chief of Staff</h2><p>{state.agents[0].mandate}</p></div></article>
+      <div className="agent-grid">{state.agents.slice(1).map((a) => <article className="agent" key={a.id}><div><Status status={a.status === "blocked" ? "red" : "green"} /><small>{a.status.toUpperCase()}</small></div><h2>{a.name}</h2><b>{a.department}</b><p>{a.mandate}</p><footer>Last cycle: {a.lastRun === "Never" ? "Never" : new Date(a.lastRun).toLocaleString()}</footer></article>)}</div>
+    </>
+  );
+}
+
+function Missions({ state, command }: { state: OSState; command: CommandFn }) {
+  return (
+    <>
+      <Title eyebrow="MAXIMUM THREE APPROVALS PER DAY" title="Fire missions" action={<MissionDialog command={command} />} />
+      <div className="mission-list">{state.missions.map((m) => <article className="panel mission-card" key={m.id}><div className="section-head"><span className={`priority ${m.priority}`}>{m.priority}</span><span className="stage">{m.status}</span></div><h2>{m.title}</h2><p>{m.reason}</p><div className="decision-grid"><Intel label="EXPECTED ROI" text={m.roi} /><Intel label="CONFIDENCE" text={`${m.confidence}%`} /><Intel label="RISK" text={m.risk} /><Intel label="ALTERNATIVE" text={m.alternative} /></div>{m.status === "queued" && <div className="actions"><Button onClick={() => void command({ command: "set_mission_status", id: m.id, status: "approved" })}><Check />Approve</Button><Button variant="outline" onClick={() => void command({ command: "set_mission_status", id: m.id, status: "deferred" })}><Clock3 />Defer</Button></div>}</article>)}</div>
+    </>
+  );
+}
+
+function Ledger({ state, command }: { state: OSState; command: CommandFn }) {
+  const [f, setF] = useState({ ventureId: "portfolio", revenueGenerated: 0, revenueProtected: 0, cashSaved: 0, hoursSaved: 0, processesAutomated: 0, customerValue: "" });
+  const t = useMemo(
+    () =>
+      state.ledger.reduce(
+        (a, v) => ({ r: a.r + v.revenueGenerated, p: a.p + v.revenueProtected, c: a.c + v.cashSaved, h: a.h + v.hoursSaved, a: a.a + v.processesAutomated }),
+        { r: 0, p: 0, c: 0, h: 0, a: 0 },
+      ),
+    [state],
+  );
+  return (
+    <>
+      <Title eyebrow="MEASURABLE VALUE ONLY" title="Value ledger" />
+      <div className="metrics">
+        <Metric label="Revenue generated" value={`$${t.r}`} note="Collected" />
+        <Metric label="Revenue protected" value={`$${t.p}`} note="Verified retention" />
+        <Metric label="Cash saved" value={`$${t.c}`} note="Avoided expense" />
+        <Metric label="Hours saved" value={t.h} note={`${t.a} processes automated`} />
+      </div>
+      <section className="panel ledger-form">
+        <h2>Post value created</h2>
+        <select value={f.ventureId} onChange={(e) => setF({ ...f, ventureId: e.target.value })}>
+          <option value="portfolio">Portfolio</option>
+          {state.ventures.map((v) => <option value={v.id} key={v.id}>{v.name}</option>)}
+        </select>
+        <div className="five-inputs">
+          {(["revenueGenerated", "revenueProtected", "cashSaved", "hoursSaved", "processesAutomated"] as const).map((k) => (
+            <label key={k}>
+              <span>{k.replace(/([A-Z])/g, " $1")}</span>
+              <Input type="number" min="0" value={f[k]} onChange={(e) => setF({ ...f, [k]: Number(e.target.value) })} />
+            </label>
+          ))}
+        </div>
+        <Textarea placeholder="Customer value created" value={f.customerValue} onChange={(e) => setF({ ...f, customerValue: e.target.value })} />
+        <Button onClick={() => void command({ command: "add_ledger", ...f })}>Post verified value</Button>
+      </section>
+      {state.ledger.map((l) => <article className="ledger-entry" key={l.id}><small>{new Date(l.date).toLocaleString()}</small><b>${l.revenueGenerated} revenue · {l.hoursSaved} hours saved · {l.processesAutomated} automated</b><p>{l.customerValue || "No customer-value note supplied."}</p></article>)}
+    </>
+  );
+}
+
+function Knowledge({ state }: { state: OSState }) {
+  return (
+    <>
+      <Title eyebrow="COMPOUNDING INTELLECTUAL PROPERTY" title="Knowledge base" />
+      <div className="knowledge-grid">{state.knowledge.map((k) => <article className="panel" key={k.id}><span className="stage">{k.type}</span><h2>{k.title}</h2><p>{k.summary}</p><small>Updated {new Date(k.updatedAt).toLocaleDateString()}</small></article>)}</div>
+    </>
+  );
+}
+
+function SystemLog({ state }: { state: OSState }) {
+  return (
+    <>
+      <Title eyebrow="REVERSIBLE AUTONOMY" title="Command action log" />
+      <div className="log-list">{state.logs.map((l) => <article key={l.id}><div className="timeline-dot" /><div><small>{new Date(l.at).toLocaleString()} · {l.actor} · {l.reversible ? "Reversible" : "Permanent"}</small><h3>{l.action}</h3><p>{l.reason}</p></div></article>)}</div>
+    </>
+  );
+}
+
+function VentureDialog({ command }: { command: CommandFn }) {
+  const [open, setOpen] = useState(false);
+  const [f, setF] = useState({ name: "", problem: "", offer: "", answers: Array(6).fill(false) as boolean[] });
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild><Button><Plus />Capture venture</Button></DialogTrigger>
+      <DialogContent className="dialog">
+        <DialogHeader><DialogTitle>Capture and screen a venture</DialogTitle></DialogHeader>
+        <Input placeholder="Venture name" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
+        <Textarea placeholder="Painful customer problem" value={f.problem} onChange={(e) => setF({ ...f, problem: e.target.value })} />
+        <Textarea placeholder="Proposed outcome or offer" value={f.offer} onChange={(e) => setF({ ...f, offer: e.target.value })} />
+        <div className="filter-list">
+          {filters.map((q, i) => (
+            <label key={q}>
+              <Checkbox checked={f.answers[i]} onCheckedChange={(v) => {
+                const a = [...f.answers];
+                a[i] = !!v;
+                setF({ ...f, answers: a });
+              }} />
+              <span>{q}</span>
+            </label>
+          ))}
+        </div>
+        <Button onClick={async () => { if (await command({ command: "create_venture", name: f.name, problem: f.problem, offer: f.offer, answers: f.answers })) setOpen(false); }}>Run Savoy Filter</Button>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function MissionDialog({ command }: { command: CommandFn }) {
+  const [open, setOpen] = useState(false);
+  const [f, setF] = useState({ title: "", reason: "", roi: "", risk: "", alternative: "", confidence: 70 });
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild><Button><Plus />Escalate decision</Button></DialogTrigger>
+      <DialogContent className="dialog">
+        <DialogHeader><DialogTitle>Create Fire Mission</DialogTitle></DialogHeader>
+        {(["title", "reason", "roi", "risk", "alternative"] as const).map((k) => <Input key={k} placeholder={k[0].toUpperCase() + k.slice(1)} value={f[k]} onChange={(e) => setF({ ...f, [k]: e.target.value })} />)}
+        <label>
+          Confidence
+          <Input type="number" min="1" max="100" value={f.confidence} onChange={(e) => setF({ ...f, confidence: Number(e.target.value) })} />
+        </label>
+        <Button onClick={async () => { if (await command({ command: "create_mission", title: f.title, reason: f.reason, roi: f.roi, risk: f.risk, alternative: f.alternative, confidence: f.confidence })) setOpen(false); }}>Queue for Dominic</Button>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function CatalogLaunch() {
+  return (
+    <>
+      <Title eyebrow="SAVOY CATALOG RESCUE" title={catalogSprint.title} />
+      <section className="panel"><span className="stage">{catalogSprint.status}</span><h2>First paid pilot target: $250</h2><p>{catalogSprint.summary}</p><p>{catalogSprint.boundary}</p><h3>Prepared launch assets</h3><p><a href="/catalog-launch/pilot-launch-kit.md" download>Download pilot scope and outreach drafts</a></p><p><a href="/catalog-launch/catalog-demo-results.json" download>Download fictional delivery sample</a></p><p><a href="/catalog-launch/market-comparison.md" download>Download market comparison</a></p><p>Sample checks passed: 25 rows preserved, 20 ready for review, 5 held for client decisions. This demonstrates checks, not customer results.</p></section>
+      <div className="agent-grid">{catalogSprint.assignments.map((a) => <article className="agent" key={a.name}><span className="stage">{a.status}</span><h2>{a.name}</h2><b>{a.role}</b><p>{a.work}</p></article>)}</div>
+      <section className="panel"><h2>Next commercial step</h2><p>{catalogSprint.next}</p></section>
+    </>
+  );
+}
+
+function Title({ eyebrow, title, action }: { eyebrow: string; title: string; action?: React.ReactNode }) {
+  return <div className="page-title"><div><p className="eyebrow">{eyebrow}</p><h1>{title}</h1></div>{action}</div>;
+}
+
+function Metric({ label, value, note }: { label: string; value: string | number; note: string }) {
+  return <article><p>{label}</p><strong>{value}</strong><small>{note}</small></article>;
+}
+
+function Intel({ label, text }: { label: string; text: string }) {
+  return <div><small>{label}</small><b>{text}</b></div>;
+}
+
+function Status({ status }: { status: string }) {
+  return <span className={`dot ${status}`} aria-label={status} />;
+}
