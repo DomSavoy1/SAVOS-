@@ -1,0 +1,357 @@
+{
+  "notice": "Fictional demonstration, not customer data or a platform import file.",
+  "before": [
+    {
+      "sku": " 00001 ",
+      "title": " Sample Product 1 ",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": " 00002 ",
+      "title": " Sample Product 2 ",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": " 00003 ",
+      "title": " Sample Product 3 ",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": " 00004 ",
+      "title": " Sample Product 4 ",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": " 00005 ",
+      "title": " Sample Product 5 ",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": " 00006 ",
+      "title": " Sample Product 6 ",
+      "price": "",
+      "currency": "USD"
+    },
+    {
+      "sku": " 00007 ",
+      "title": " Sample Product 7 ",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": " 00008 ",
+      "title": " Sample Product 8 ",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": " 00009 ",
+      "title": " Sample Product 9 ",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": " 00010 ",
+      "title": " Sample Product 10 ",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": " 00011 ",
+      "title": " Sample Product 11 ",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": "00001",
+      "title": " Sample Product 12 ",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": " 00013 ",
+      "title": " Sample Product 13 ",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": " 00014 ",
+      "title": " Sample Product 14 ",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": " 00015 ",
+      "title": " Sample Product 15 ",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": " 00016 ",
+      "title": " Sample Product 16 ",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": " 00017 ",
+      "title": " Sample Product 17 ",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": " 00018 ",
+      "title": " Sample Product 18 ",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": " 00019 ",
+      "title": " Sample Product 19 ",
+      "price": "-2.00",
+      "currency": "USD"
+    },
+    {
+      "sku": " 00020 ",
+      "title": " Sample Product 20 ",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": " 00021 ",
+      "title": " Sample Product 21 ",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": " 00022 ",
+      "title": " Sample Product 22 ",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": " 00023 ",
+      "title": " Sample Product 23 ",
+      "price": "18.00",
+      "currency": ""
+    },
+    {
+      "sku": " 00024 ",
+      "title": " Sample Product 24 ",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": " 00025 ",
+      "title": " Sample Product 25 ",
+      "price": "18.00",
+      "currency": "USD"
+    }
+  ],
+  "cleaned": [
+    {
+      "sku": "00001",
+      "title": "Sample Product 1",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": "00002",
+      "title": "Sample Product 2",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": "00003",
+      "title": "Sample Product 3",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": "00004",
+      "title": "Sample Product 4",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": "00005",
+      "title": "Sample Product 5",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": "00006",
+      "title": "Sample Product 6",
+      "price": "",
+      "currency": "USD"
+    },
+    {
+      "sku": "00007",
+      "title": "Sample Product 7",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": "00008",
+      "title": "Sample Product 8",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": "00009",
+      "title": "Sample Product 9",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": "00010",
+      "title": "Sample Product 10",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": "00011",
+      "title": "Sample Product 11",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": "00001",
+      "title": "Sample Product 12",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": "00013",
+      "title": "Sample Product 13",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": "00014",
+      "title": "Sample Product 14",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": "00015",
+      "title": "Sample Product 15",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": "00016",
+      "title": "Sample Product 16",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": "00017",
+      "title": "Sample Product 17",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": "00018",
+      "title": "Sample Product 18",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": "00019",
+      "title": "Sample Product 19",
+      "price": "-2.00",
+      "currency": "USD"
+    },
+    {
+      "sku": "00020",
+      "title": "Sample Product 20",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": "00021",
+      "title": "Sample Product 21",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": "00022",
+      "title": "Sample Product 22",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": "00023",
+      "title": "Sample Product 23",
+      "price": "18.00",
+      "currency": ""
+    },
+    {
+      "sku": "00024",
+      "title": "Sample Product 24",
+      "price": "18.00",
+      "currency": "USD"
+    },
+    {
+      "sku": "00025",
+      "title": "Sample Product 25",
+      "price": "18.00",
+      "currency": "USD"
+    }
+  ],
+  "issues": [
+    {
+      "row": 1,
+      "field": "sku",
+      "reason": "Repeated identifier; client must resolve"
+    },
+    {
+      "row": 6,
+      "field": "price",
+      "reason": "Supply a nonnegative decimal price with two decimal places"
+    },
+    {
+      "row": 12,
+      "field": "sku",
+      "reason": "Repeated identifier; client must resolve"
+    },
+    {
+      "row": 19,
+      "field": "price",
+      "reason": "Supply a nonnegative decimal price with two decimal places"
+    },
+    {
+      "row": 23,
+      "field": "currency",
+      "reason": "Pilot expects explicit USD; no conversion performed"
+    }
+  ],
+  "readyRows": [
+    2,
+    3,
+    4,
+    5,
+    7,
+    8,
+    9,
+    10,
+    11,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    20,
+    21,
+    22,
+    24,
+    25
+  ],
+  "checks": "8 assertions passed; manual client review still required"
+}

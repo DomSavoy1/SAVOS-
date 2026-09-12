@@ -1,7 +1,8 @@
 import {env} from "cloudflare:workers";
 import {seedState,type OSState} from "@/lib/os";
-async function save(s:OSState){s.updatedAt=new Date().toISOString();await env.DB.prepare("INSERT INTO operating_state (id,payload,updated_at) VALUES (?,?,?) ON CONFLICT(id) DO UPDATE SET payload=excluded.payload,updated_at=excluded.updated_at").bind(1,JSON.stringify(s),s.updatedAt).run()}
-async function read():Promise<OSState>{const r=await env.DB.prepare("SELECT payload FROM operating_state WHERE id = ?").bind(1).first<{payload:string}>();if(r?.payload)return JSON.parse(r.payload);await save(seedState);return seedState}
+function database(){if(!env.DB)throw new Error("Operating database is not configured.");return env.DB}
+async function save(s:OSState){s.updatedAt=new Date().toISOString();await database().prepare("INSERT INTO operating_state (id,payload,updated_at) VALUES (?,?,?) ON CONFLICT(id) DO UPDATE SET payload=excluded.payload,updated_at=excluded.updated_at").bind(1,JSON.stringify(s),s.updatedAt).run()}
+async function read():Promise<OSState>{const r=await database().prepare("SELECT payload FROM operating_state WHERE id = ?").bind(1).first<{payload:string}>();if(r?.payload)return JSON.parse(r.payload);await save(seedState);return seedState}
 const uid=()=>crypto.randomUUID();
 export async function GET(){try{return Response.json({state:await read()})}catch(e){console.error(e);return Response.json({error:"The operating database is temporarily unavailable."},{status:503})}}
 export async function POST(req:Request){try{const x=await req.json() as any,s=await read(),now=new Date().toISOString();
