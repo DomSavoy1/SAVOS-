@@ -1,0 +1,8 @@
+import {claimDueJob,counts,enqueue,lastCompleted,listJobs,monthlySpend} from "@/lib/autonomy/store";
+import {execute} from "@/lib/autonomy/engine";
+import type {JobKind} from "@/lib/autonomy/types";
+import {isOwner,unauthorized} from "@/lib/auth";
+export const runtime="nodejs";
+const authorized=(request:Request)=>Boolean(process.env.AUTONOMY_WORKER_TOKEN)&&request.headers.get("authorization")===`Bearer ${process.env.AUTONOMY_WORKER_TOKEN}`;
+export async function GET(request:Request){if(!isOwner(request))return unauthorized();return Response.json({enabled:process.env.AUTONOMY_ENABLED==="true",modelConfigured:!!process.env.OPENAI_API_KEY,deliveryConfigured:!!process.env.OUTREACH_FROM_EMAIL,budgetUsd:Number(process.env.AUTONOMY_MONTHLY_BUDGET_USD||50),estimatedSpendUsd:monthlySpend(),jobs:listJobs(),counts:counts(),lastCycleAt:lastCompleted("operating_cycle")})}
+export async function POST(request:Request){const body=await request.json() as {action?:string;kind?:JobKind;payload?:Record<string,unknown>};const worker=authorized(request);if(body.action==="work"){if(!worker)return Response.json({error:"Unauthorized"},{status:401});const job=claimDueJob();return Response.json(job?{job:await execute(job)}:{job:null})}if(body.action==="enqueue"){if(!worker&&!isOwner(request))return unauthorized();const allowed:JobKind[]=["operating_cycle","catalog_intake","catalog_transform","prospect_research","outreach","daily_briefing"];if(!body.kind||!allowed.includes(body.kind))return Response.json({error:"Invalid job kind"},{status:400});return Response.json({job:enqueue(body.kind,body.payload||{})},{status:201})}return Response.json({error:"Unknown action"},{status:400})}

@@ -2,6 +2,11 @@
 set -euo pipefail
 
 cd /var/www/savos
+if [ -f /etc/savos/savos.env ]; then
+  set -a
+  . /etc/savos/savos.env
+  set +a
+fi
 npm ci
 npm run build
 pm2 startOrReload ecosystem.config.cjs --update-env
