@@ -12,6 +12,7 @@ module.exports = {
       env: {
         NODE_ENV: "production",
         PORT: "3000",
+        SAVOS_DATA_FILE: "/var/lib/savos/os-state.json",
       },
     },
   ],
