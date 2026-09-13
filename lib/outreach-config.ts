@@ -4,6 +4,11 @@ export const outreachConfig = {
   phone: "+12404400407",
   website: "https://savoyventures.org",
   checkout: "https://buy.stripe.com/3cI3cvfSX0A47839B6fYY00",
+  serviceCheckouts: {
+    merchantFeedRescue: "https://buy.stripe.com/5kQ3cv8qvaaEdwr4gMfYY01",
+    shopifyImportRescue: "https://buy.stripe.com/7sYbJ18qvfuY4ZV7sYfYY02",
+    supplierFileNormalization: "https://buy.stripe.com/14AcN50Y33Mg4ZVaFafYY03",
+  },
   signaturePreview: "https://savoyventures.org/email/signature.html",
   workflow: [
     "Find retailers with visible product-catalog quality problems.",
