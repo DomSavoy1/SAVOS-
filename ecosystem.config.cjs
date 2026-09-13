@@ -22,6 +22,10 @@ module.exports = {
         AUTONOMY_MONTHLY_BUDGET_USD: process.env.AUTONOMY_MONTHLY_BUDGET_USD || "50",
         AUTONOMY_DB_FILE: "/var/lib/savos/autonomy.sqlite",
         OUTREACH_FROM_EMAIL: process.env.OUTREACH_FROM_EMAIL,
+        STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
+        MICROSOFT_TENANT_ID: process.env.MICROSOFT_TENANT_ID,
+        MICROSOFT_CLIENT_ID: process.env.MICROSOFT_CLIENT_ID,
+        MICROSOFT_CLIENT_SECRET: process.env.MICROSOFT_CLIENT_SECRET,
       },
     },
     {
