@@ -26,6 +26,7 @@ module.exports = {
         MICROSOFT_TENANT_ID: process.env.MICROSOFT_TENANT_ID,
         MICROSOFT_CLIENT_ID: process.env.MICROSOFT_CLIENT_ID,
         MICROSOFT_CLIENT_SECRET: process.env.MICROSOFT_CLIENT_SECRET,
+        MICROSOFT_REFRESH_TOKEN_FILE: process.env.MICROSOFT_REFRESH_TOKEN_FILE || "/var/lib/savos/microsoft-refresh-token",
       },
     },
     {
@@ -43,6 +44,9 @@ module.exports = {
         AUTONOMY_DB_FILE: "/var/lib/savos/autonomy.sqlite",
         AUTONOMY_ENABLED: process.env.AUTONOMY_ENABLED || "false",
         AUTONOMY_WORKER_TOKEN: process.env.AUTONOMY_WORKER_TOKEN,
+        MICROSOFT_TENANT_ID: process.env.MICROSOFT_TENANT_ID,
+        MICROSOFT_CLIENT_ID: process.env.MICROSOFT_CLIENT_ID,
+        MICROSOFT_REFRESH_TOKEN_FILE: process.env.MICROSOFT_REFRESH_TOKEN_FILE || "/var/lib/savos/microsoft-refresh-token",
       },
     },
   ],
