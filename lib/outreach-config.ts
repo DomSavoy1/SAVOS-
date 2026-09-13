@@ -1,7 +1,7 @@
 export const outreachConfig = {
   mailbox: "SavoyVentures@outlook.com",
   founder: "Dominic Savoy",
-  phone: "+15715550198",
+  phone: "+12404400407",
   website: "https://savoyventures.org",
   checkout: "https://buy.stripe.com/3cI3cvfSX0A47839B6fYY00",
   signaturePreview: "https://savoyventures.org/email/signature.html",
